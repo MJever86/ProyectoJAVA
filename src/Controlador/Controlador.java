@@ -1,18 +1,22 @@
 package Controlador;
 
-/**
- * @author Maria Jose Rodriguez Martinez
- */
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import Modelo.Museos;
 
+import javax.swing.JOptionPane;
+
+import Modelo.IlegalMuseoException;
+import Modelo.Museos;
+/**
+ * @author Maria Jose Rodriguez Martinez
+ */
 
 public class Controlador {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NumberFormatException, IlegalMuseoException {
 
 		//inicializo la lista de museos cogiendo los datos de mi fichero
 		List<Museos> lista = new ArrayList<Museos>();

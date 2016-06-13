@@ -3,6 +3,9 @@ package Modelo;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+/** clase que crea una vista nueva de la tabla
+ * @author Maria Jose Rodriguez Martinez
+ */
 
 //clase que crea una vista nueva de la tabla
 public class CrearVista {

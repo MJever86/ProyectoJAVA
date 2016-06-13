@@ -1,15 +1,18 @@
 package Modelo;
-/*
- * @author Maria Jose Rodriguez Martinez
- */
 
 import java.sql.Connection;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
 import Modelo.Museos;
+
+/**
+ * @author Maria Jose Rodriguez Martinez
+ */
+
 //clase que inserta datos
 public class InsertarDatos {
 	private static Statement sentencia;
@@ -33,8 +36,14 @@ public class InsertarDatos {
 		}
 	public static void addMuseos(Connection con, Museos museos){
 		
-			String sql = "INSERT INTO MUSEOS VALUES"
+		/*	String sql = "INSERT INTO MUSEOS VALUES"
 					+ "("+museos.getId()+
+					","+"'"+museos.getNombreMuseo()+
+					"',"+"'"+museos.getDireccion()+
+					"',"+"'"+museos.getHorario()+
+					"',"+"'"+museos.getTelefono()+"')";*/
+			String sql = "INSERT INTO MUSEOS VALUES"
+					+ "("+null+
 					","+"'"+museos.getNombreMuseo()+
 					"',"+"'"+museos.getDireccion()+
 					"',"+"'"+museos.getHorario()+

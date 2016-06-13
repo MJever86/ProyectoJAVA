@@ -3,9 +3,13 @@ package Modelo;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
+/**clase que muestra nuestra tabla en la base de datos
+ * 
+ * @author Maria Jose Rodriguez Martinez
+ */
 
 public class MuseosTableModelo extends AbstractTableModel{
-	private String[] columNames={"id","Nombre Museo","Direccion","Telefono","Información"};
+	private String[] columNames={"Id","NombreMuseo","Direccion","Telefono","Informacion"};
 	private List<Museos> lista;
 	
 	public MuseosTableModelo (List<Museos> lista){
@@ -14,7 +18,7 @@ public class MuseosTableModelo extends AbstractTableModel{
 	@Override
 	public int getColumnCount() {
 		// TODO Auto-generated method stub
-		return 5;
+		return 4;
 	}
 	@Override
 	public int getRowCount() {
@@ -26,15 +30,15 @@ public class MuseosTableModelo extends AbstractTableModel{
 		// TODO Auto-generated method stub
 		Museos m=lista.get(arg0);
 		switch(arg1){
+		/*case 0:
+			return m.getId();*/
 		case 0:
-			return m.getId();
-		case 1:
 			return m.getNombreMuseo();
-		case 2:
+		case 1:
 			return m.getDireccion();
-		case 3: 
+		case 2: 
 			return m.getHorario();
-		case 4:
+		case 3:
 			return m.getTelefono();
 		
 		}

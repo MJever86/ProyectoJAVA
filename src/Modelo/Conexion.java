@@ -1,14 +1,15 @@
 package Modelo;
-/*
- * @author Maria Jose Rodriguez Martinez
- */
+
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 import org.sqlite.SQLiteConfig;
-
+/**clase para establecer la conexion con la base de datos
+ * @author Maria Jose Rodriguez Martinez
+ */
 
 
 //establecemos una conexion con la base de datos para que java se entienda con sqlite

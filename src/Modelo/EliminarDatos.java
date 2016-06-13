@@ -3,6 +3,9 @@ package Modelo;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+/**clase que elimina los datos seleccionados de nuestra base de datos
+ * @author Maria Jose Rodriguez Martinez
+ */
 
 
 public class EliminarDatos {

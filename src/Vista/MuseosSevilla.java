@@ -1,9 +1,5 @@
 package Vista;
 
-/**
- * @author Maria Jose Rodriguez Martinez
- * 
- */
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Frame;
@@ -13,9 +9,11 @@ import java.awt.Panel;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.security.cert.Extension;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,16 +32,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+
 import Modelo.Conexion;
 import Modelo.CrearPDF;
 import Modelo.CrearTablas;
 import Modelo.CrearTrigger;
 import Modelo.EliminarDatos;
+import Modelo.IlegalMuseoException;
 import Modelo.InsertarDatos;
+import Modelo.ListaMuseos;
+import Modelo.MuseoDTO;
 import Modelo.Museos;
 import Modelo.MuseosTableModelo;
 import Modelo.SeleccionarDatos;
-
 import javax.swing.JTable;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -66,6 +67,13 @@ import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 
+/**
+ * clase vista que controla toda nuestra aplicacion, con sus respectivos botones, menu y demas componentes.
+ * 
+ * @author Maria Jose Rodriguez Martinez
+ * 
+ */
+
 public class MuseosSevilla extends JFrame {
 
 	private JPanel contentPane;
@@ -82,12 +90,17 @@ public class MuseosSevilla extends JFrame {
 	private JScrollPane scrollPane = new JScrollPane(tabla);
 	private Connection conexion= Conexion.getConexion();
 	 File fichero;
+	 private MuseoDTO museo= new MuseoDTO();
 	//private JTable table;
 	
 	
 	/**
 	 * Launch the application.
 	 */
+	 /**
+	  * 
+	  * @param args desde aqui lanzamos la aplicacion
+	  */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -133,7 +146,7 @@ public class MuseosSevilla extends JFrame {
 		//aqui se verifica si la base de datos contiene datos, si es asi se bloquea
 		if (InsertarDatos.comprobarDatos(conexion)){
             mntmCargarDatos.setEnabled(false);
-            lista=SeleccionarDatos.cargarDatosDesdeTabla(conexion);
+            lista=museo.cargarDatosDesdeTabla(conexion);
             //InsertarDatos.addMuseos(conexion, lista);
             model = new MuseosTableModelo(lista);
             tabla.setModel(model);
@@ -164,7 +177,15 @@ public class MuseosSevilla extends JFrame {
 						String palabra=sc.nextLine();
 						
 						palabraseparada=palabra.split(";");
-						lista.add(new Museos(Integer.parseInt(palabraseparada[0]), palabraseparada[1], palabraseparada[2],palabraseparada[3],palabraseparada[4]));
+						try {
+							lista.add(new Museos(Integer.parseInt(palabraseparada[0]), palabraseparada[1], palabraseparada[2],palabraseparada[3],palabraseparada[4]));
+						} catch (NumberFormatException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IlegalMuseoException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						//System.out.println(lista);		
 					}
 					model= new MuseosTableModelo(lista);
@@ -172,7 +193,7 @@ public class MuseosSevilla extends JFrame {
 					//metodo que deshabilita el boton cargar datos.
 					mntmCargarDatos.setEnabled(false);
 					System.out.println(lista);
-					InsertarDatos.addMuseos(conexion, lista);
+					museo.addMuseos(conexion, lista);
 					//llamamos a los triggers y a crear vista
 					//CrearTrigger.crearTriggerActualizar(conexion);
 					CrearTrigger.crearTriggerBorrado(conexion);
@@ -224,7 +245,12 @@ public class MuseosSevilla extends JFrame {
 		JMenuItem mntmNuevo = new JMenuItem("Nuevo");
 		mntmNuevo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				lista.add(new Museos(lista.size()+1,"", "", "", ""));
+				try {
+					lista.add(new Museos(lista.size()+1,"", "", "", "000-000-000"));
+				} catch (IlegalMuseoException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				tabla.repaint();
 				
 			}
@@ -237,7 +263,7 @@ public class MuseosSevilla extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				lista.remove(tabla.getSelectedRow());
-				EliminarDatos.removeMuseo(conexion, lista.get(tabla.getSelectedRow()));
+				museo.removeMuseo(conexion, tabla.getSelectedRow());
 			}
 		});
 		mnRegistro.add(mntmEliminar);
@@ -249,18 +275,17 @@ public class MuseosSevilla extends JFrame {
 		JMenuItem mntmGenerarPdf = new JMenuItem("Generar PDF");
 		mnInforme.add(mntmGenerarPdf);
 		
-		//metodo para generar PDF con los elementos que esten seleccionados
-		//si no se selecciona nada solo muestra la cabecera
+		//metodo para generar pdf de la lista de museos
 		mntmGenerarPdf.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0){
-				JFileChooser chooser = new JFileChooser();
+				JFileChooser ficheroPdf = new JFileChooser();
 				//filtro para que solo coja este tipo de ficheros
 				FileNameExtensionFilter filter= new FileNameExtensionFilter("pdf", "PDF Files","PDF");
-				chooser.setFileFilter(filter);
-				int returnVal= chooser.showSaveDialog(menuBar);
+				ficheroPdf.setFileFilter(filter);
+				int returnVal= ficheroPdf.showSaveDialog(menuBar);
 				if(returnVal == JFileChooser.APPROVE_OPTION){
-					CrearPDF.CrearDocumentoPDF(chooser.getSelectedFile(),lista);
-				}	
+					CrearPDF.CrearDocumentoPDF(ficheroPdf.getSelectedFile(), lista);
+					}	
 			}
 		});
 				
@@ -280,14 +305,14 @@ public class MuseosSevilla extends JFrame {
 				dialogo.getContentPane().setLayout(new BoxLayout(dialogo.getContentPane(), BoxLayout.Y_AXIS));
 				dialogo.getContentPane().add(new JPanel(new GridBagLayout()));
 				dialogo.getContentPane().add(new JLabel("<html>MUSEOS DE SEVILLA<br><br>"
-						+ "Nombre: M� Jose Rodriguez Martinez<br><br>" + "Fecha:</html>"));
+						+ "Nombre: Maria Jose Rodriguez Martinez<br><br>" + "Fecha:</html>"));
 				dialogo.getContentPane().add(new JLabel(LocalDate.now() + ""));
 				dialogo.pack();
 				dialogo.setVisible(true);
 				dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);*/
 				
 				JOptionPane.showMessageDialog(null, "Museos de Sevilla y otros centros culturales\n"
-						+"Realizada por M� Jose Rodriguez Martinez");
+						+"Realizada por Maria Jose Rodriguez Martinez");
 			}
 		});	
 		mnAyuda.add(mntmAcercaDe);
@@ -319,7 +344,11 @@ public class MuseosSevilla extends JFrame {
 		JButton button = new JButton("Agregar Museo");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				lista.add(new Museos(lista.size()+1,"", "", "", ""));
+				try {
+					lista.add(new Museos(lista.size()+1,"", "", "", "000-000-000"));
+				} catch (IlegalMuseoException e) {
+					// TODO Auto-generated catch block
+					JOptionPane.showMessageDialog (getParent(), "Numero de telefono no valido", "Error", JOptionPane.INFORMATION_MESSAGE);				}
 				tabla.repaint();
 			}
 		});
@@ -338,7 +367,8 @@ public class MuseosSevilla extends JFrame {
 		textField.setColumns(10);
 		
 		//quitamos la seleccion multiple de filas
-		tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);		
+		
 		
 		
 		JLabel label_1 = new JLabel("Museo:");
@@ -356,7 +386,7 @@ public class MuseosSevilla extends JFrame {
 		textField_3 = new JTextField();
 		textField_3.setColumns(10);
 		
-		//boton siguiente directamente desde la interfaz sin pasar por el menú
+		//boton siguiente directamente desde la interfaz sin pasar por el menu
 		JButton btnSiguiente = new JButton("Sig.");
 		btnSiguiente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -382,7 +412,13 @@ public class MuseosSevilla extends JFrame {
 		JButton btnEliminar = new JButton("Eliminar");
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				
+				museo.removeMuseo(conexion,lista.get(tabla.getSelectedRow()).getId());
 				lista.remove(tabla.getSelectedRow());
+				
+
+				tabla.repaint();
 			}
 		});
 		
@@ -393,7 +429,16 @@ public class MuseosSevilla extends JFrame {
 				lista.get(tabla.getSelectedRow()).setNombreMuseo(textField_1.getText());
 				lista.get(tabla.getSelectedRow()).setDireccion(textField_2.getText());
 				lista.get(tabla.getSelectedRow()).setHorario(textField_3.getText());
+				if(textField.getText().length()==11)
 				lista.get(tabla.getSelectedRow()).setTelefono(textField.getText());
+				else
+					JOptionPane.showMessageDialog (getParent(), "Numero de telefono no valido", "Error", JOptionPane.INFORMATION_MESSAGE);			
+
+				//añadimos registro nuevo
+				museo.addMuseos(conexion, lista.get(tabla.getSelectedRow()));
+				//actualizamos la tabla
+				tabla.repaint();
+				
 				
 			}
 		});
@@ -482,13 +527,22 @@ public class MuseosSevilla extends JFrame {
 		
 		//creamos la etiqueta para la barra de estado y creamos el metodo para que funcione
 		tabla.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			
+		
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
+				//metodo para que se rellene el formulario cuando se selecciona una fila
+				textField_1.setText(tabla.getValueAt(tabla.getSelectedRow(),0).toString());
+				textField_2.setText(tabla.getValueAt(tabla.getSelectedRow(),1).toString());
+				textField_3.setText(tabla.getValueAt(tabla.getSelectedRow(),2).toString());
+				textField.setText(tabla.getValueAt(tabla.getSelectedRow(),3).toString());
+				//metodo que muestra en la barra de estado el numero de registro
 				lblBarraEstado.setText("Museo: "+(tabla.getSelectedRow()+1)+" de "+lista.size());
 				
 			}
 		});
+		
+		
+		
 	}
 	
 	}

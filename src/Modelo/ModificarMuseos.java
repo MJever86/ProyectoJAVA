@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import Modelo.Museos;;
-/*
+/**
  * @author Maria Jose Rodriguez Martinez
  */
 public class ModificarMuseos {
